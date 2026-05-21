@@ -30,38 +30,41 @@ document.addEventListener("DOMContentLoaded" , function(){
             searchButton.textContent = "Searching...";
             searchButton.disabled = true;
 
-            // const response = await fetch(url);
-            const proxyUrl = `https://cors-anywhere.herokuapp.com/`;
-            const targetUrl = `https://leetcode.com/graphql/`;
-            // concatenated URL: https://cors-anywhere.herokuapp.com/https://leetcode.com/graphql/
+            // Using the Vercel Rewrite URL to securely bypass CORS natively
+            const targetUrl = `/leetcode-api/graphql/`;
+            
             const myHeaders = new Headers();
             myHeaders.append("content-type" , "application/json");
 
             const graphql = JSON.stringify({
-            query: "\n query userSessionProgress($username: String!) {\n allQuestionsCount {\n difficulty\n count\n }\n matchedUser(username: $username) {\n    submitStats {\n      acSubmissionNum{\n        difficulty\n        count\n        submissions\n      }\n      totalSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n    }\n  }\n}\n    ",
-            variables: { "username": `${username}`}
-        })
+                query: "\n query userSessionProgress($username: String!) {\n allQuestionsCount {\n difficulty\n count\n }\n matchedUser(username: $username) {\n    submitStats {\n      acSubmissionNum{\n        difficulty\n        count\n        submissions\n      }\n      totalSubmissionNum {\n        difficulty\n        count\n        submissions\n      }\n    }\n  }\n}\n    ",
+                variables: { "username": `${username}`}
+            });
 
-        const requestOptions = {
-            method: "POST" ,
-            headers: myHeaders,
-            body:graphql,
-            redirect: "follow"
-        };
+            const requestOptions = {
+                method: "POST" ,
+                headers: myHeaders,
+                body: graphql,
+                redirect: "follow"
+            };
 
-        const response = await fetch(proxyUrl+targetUrl, requestOptions);
+            const response = await fetch(targetUrl, requestOptions);
 
-        const url = `https://leetcode.com/graphql`;
             if(!response.ok){
                 throw new Error("Unable to fetch the User details");
             }
+            
             const parsedData = await response.json();
             console.log("Logging data: ", parsedData);
+
+            if (!parsedData.data || !parsedData.data.matchedUser) {
+                throw new Error("User not found or profile is private");
+            }
 
             displayUserData(parsedData); 
         }
         catch(error){
-            statsContainer.innerHTML = `<p>${error.message}</p>`;
+            statsContainer.innerHTML = `<p style="color: red; font-weight: bold;">${error.message}</p>`;
         }
         finally{
             searchButton.textContent = "Search";
@@ -76,12 +79,10 @@ document.addEventListener("DOMContentLoaded" , function(){
     }
 
     function displayUserData(parsedData){
-        const totalQues = parsedData.data.allQuestionsCount[0].count;
         const totalEasyQues = parsedData.data.allQuestionsCount[1].count;
         const totalMediumQues = parsedData.data.allQuestionsCount[2].count;
         const totalHardQues = parsedData.data.allQuestionsCount[3].count; 
 
-        const solvedTotalQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[0].count;
         const solvedTotalEasyQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[1].count;
         const solvedTotalMediumQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[2].count;
         const solvedTotalHardQues = parsedData.data.matchedUser.submitStats.acSubmissionNum[3].count;
@@ -94,7 +95,7 @@ document.addEventListener("DOMContentLoaded" , function(){
             {label: "Overall Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[0].submissions },
             {label: "Overall Easy Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[1].submissions },
             {label: "Overall Medium Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[2].submissions },
-            {label: "Overall Hard Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[3 ].submissions },
+            {label: "Overall Hard Submissions", value:parsedData.data.matchedUser.submitStats.totalSubmissionNum[3].submissions },
         ]
 
         console.log("card ka data: " , cardsData);
@@ -110,8 +111,6 @@ document.addEventListener("DOMContentLoaded" , function(){
         ).join("");
     } 
 
-    
-
     searchButton.addEventListener('click' , function(){
         const username = usernameInput.value;
         console.log("Hello" , username);
@@ -119,4 +118,4 @@ document.addEventListener("DOMContentLoaded" , function(){
             fetchUserDetails(username);
         }
     });
-})
+});
