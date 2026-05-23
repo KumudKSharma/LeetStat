@@ -31,8 +31,8 @@ document.addEventListener("DOMContentLoaded" , function(){
             searchButton.disabled = true;
 
             // const response = await fetch(url);
-            const proxyUrl = `https://cors-anywhere.herokuapp.com/`;
-            const targetUrl = `https://leetcode.com/graphql/`;
+            // const proxyUrl = `https://cors-anywhere.herokuapp.com/`;
+            // const targetUrl = `https://leetcode.com/graphql/`;
             // concatenated URL: https://cors-anywhere.herokuapp.com/https://leetcode.com/graphql/
             const myHeaders = new Headers();
             myHeaders.append("content-type" , "application/json");
