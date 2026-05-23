@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded" , function(){
             redirect: "follow"
         };
 
-        const response = await fetch(proxyUrl+targetUrl, requestOptions);
+        const response = await fetch("/api/leetcode", requestOptions);
 
         const url = `https://leetcode.com/graphql`;
             if(!response.ok){
